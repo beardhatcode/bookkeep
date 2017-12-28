@@ -5,10 +5,12 @@ import java.util.function.BiFunction;
 /**
  *
  * Subclasses should be made for each source_id.
+ * @todo put sourceid back in here
  * 
  */
 public class BankStatement {
-    private final long id;
+    private final Long id;
+    private final String ref;
     private final double amount;
     private final String sender;
     private final String receiver;
@@ -17,8 +19,9 @@ public class BankStatement {
     private final String note;
     private final String raw;
 
-    public BankStatement(long id, double amount, String sender, String receiver, String comment, Date date, String note, String raw) {
+    public BankStatement(Long id, String ref, double amount, String sender, String receiver, String comment, Date date, String note, String raw) {
         this.id = id;
+        this.ref = ref;
         this.amount = amount;
         this.sender = sender;
         this.receiver = receiver;
@@ -30,6 +33,10 @@ public class BankStatement {
 
     public long getId() {
         return id;
+    }
+
+    public String getRef() {
+        return ref;
     }
 
     public double getAmount() {
@@ -73,5 +80,19 @@ public class BankStatement {
         public double combine(BankStatement subject, BankStatement object){
             return this.combinator.apply(subject,object);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "BankStatement{" +
+                "id=" + id +
+                ", ref='" + ref + '\'' +
+                ", amount=" + amount +
+                ", sender='" + sender + '\'' +
+                ", receiver='" + receiver + '\'' +
+                ", comment='" + comment + '\'' +
+                ", date=" + date +
+                ", note='" + note + '\'' +
+                '}';
     }
 }

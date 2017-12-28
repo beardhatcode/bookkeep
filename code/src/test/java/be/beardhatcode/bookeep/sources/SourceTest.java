@@ -3,6 +3,7 @@ package be.beardhatcode.bookeep.sources;
 import be.beardhatcode.bookeep.BankStatement;
 import org.junit.Test;
 
+import java.io.File;
 import java.util.List;
 
 public class SourceTest {
@@ -31,7 +32,7 @@ public class SourceTest {
 class SourceTestTestBS implements ImportSource<BankStatement>{
 
     @Override
-    public List<BankStatement> parseFile() {
+    public List<BankStatement> parseFile(File lol) {
         return null;
     }
 

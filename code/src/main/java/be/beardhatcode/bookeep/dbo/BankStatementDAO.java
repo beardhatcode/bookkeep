@@ -22,6 +22,7 @@ public class BankStatementDAO extends DAO<BankStatement> {
     protected BankStatement buildFromResultSet(ResultSet rs) throws SQLException {
         return new BankStatement(
                 rs.getLong("id"),
+                rs.getString("ref"),
                 rs.getDouble("amount"),
                 rs.getString("sender"),
                 rs.getString("receiver"),
@@ -31,4 +32,6 @@ public class BankStatementDAO extends DAO<BankStatement> {
                 rs.getString("raw")
         );
     }
+
+
 }
