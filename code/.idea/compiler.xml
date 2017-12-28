@@ -6,10 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="bookkeep" />
         <module name="gs-rest-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="bookkeep" target="1.8" />
       <module name="gs-rest-service" target="1.8" />
     </bytecodeTargetLevel>
   </component>

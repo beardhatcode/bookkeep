@@ -1,4 +1,4 @@
-package hello;
+package be.beardhatcode.bookeep;
 
 public class Greeting {
 

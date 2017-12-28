@@ -1,72 +1,124 @@
-CREATE TYPE statementkind AS ENUM ('PAYS_FOR','REIMBURSES');
+CREATE TYPE STATEMENTKIND AS ENUM ('PAYS_FOR', 'REIMBURSES');
 
-CREATE TABLE public.organisations (
-    id int8 NOT NULL PRIMARY KEY,
-    "name" varchar(75) NOT NULL
+CREATE TABLE organisations
+(
+  id   BIGSERIAL   NOT NULL,
+  name VARCHAR(75) NOT NULL,
+  CONSTRAINT organisations_pkey
+  PRIMARY KEY (id)
 );
-COMMENT ON TABLE public.organisations IS 'Organisations' ;
 
-CREATE TABLE public.sources (
-    id int8 NOT NULL PRIMARY KEY,
-    "class" varchar(150) NOT NULL
-);
-COMMENT ON TABLE public.sources IS 'Sources' ;
+COMMENT ON TABLE organisations IS 'Organisations';
 
-CREATE TABLE public.statements (
-	id int8 NOT NULL PRIMARY KEY,
-	"amount" money NOT NULL,
-	"sender" varchar(150) NOT NULL,
-	"receiver" varchar(150) NOT NULL,
-	"comment" text NULL,
-	"date" timestamptz NOT NULL,
-	"note" text NULL,
-	"raw" text NULL,
-	"source_id" int8 NOT null references sources
+CREATE TABLE sources
+(
+  id    BIGSERIAL    NOT NULL,
+  class VARCHAR(150) NOT NULL,
+  type  VARCHAR(20)  NOT NULL,
+  name  VARCHAR(20)  NOT NULL,
+  CONSTRAINT sources_pkey
+  PRIMARY KEY (id)
 );
-COMMENT ON TABLE public.statements IS 'Bank statements' ;
 
-CREATE TABLE public.invoices (
-	id int8 NOT NULL PRIMARY KEY,
-    "name" varchar(75) NOT NULL,
-    "organisation_id" int8 null references organisations,
-    "type_id" int8 NOT NULL,
-	"amount" money NOT NULL,
-	"note" text NULL,
-    "filename" varchar(200) NULL,
-    "content" text NULL,
-    "paid" int8 NULL,
-	"raw" text NULL,
-	"source_id" int8 NOT NULL
-);
-COMMENT ON TABLE public.invoices IS 'Invoices and receipts' ;
+CREATE UNIQUE INDEX sources_name_type_uindex
+  ON sources (name, type);
 
-CREATE TABLE public.warranties (
-    id int8 NOT NULL PRIMARY KEY,
-    "name" varchar(75) NOT NULL,
-    "receipt" int8 NULL,
-    "note" text NULL
-);
-COMMENT ON TABLE public.warranties IS 'Warranties' ;
+COMMENT ON TABLE sources IS 'Sources';
 
-CREATE TABLE public.statements_relations(
-    "subject" int8 NOT NULL REFERENCES statements,
-    "object" int8 NOT NULL REFERENCES statements,
-    "kind" statementkind NOT NULL,
-    "invoice" int8 NULL REFERENCES invoices,
-    PRIMARY KEY ("subject", "object")
+CREATE TABLE statements
+(
+  id        BIGSERIAL                NOT NULL,
+  amount    NUMERIC(12, 2)           NOT NULL,
+  sender    VARCHAR(150)             NOT NULL,
+  receiver  VARCHAR(150)             NOT NULL,
+  comment   TEXT,
+  date      TIMESTAMP WITH TIME ZONE NOT NULL,
+  note      TEXT,
+  raw       TEXT,
+  source_id BIGINT                   NOT NULL,
+  CONSTRAINT statements_pkey
+  PRIMARY KEY (id),
+  CONSTRAINT statements_source_id_fkey
+  FOREIGN KEY (source_id) REFERENCES sources
 );
-COMMENT ON TABLE public.statements_relations IS 'Relations between statements' ;
 
-CREATE TABLE public.statements_invoices(
-    "statement_id" int8 NOT NULL REFERENCES statements,
-    "invoice_id" int8 NOT null REFERENCES invoices,
-    "note" text null,
-    PRIMARY KEY ("statement_id", "invoice_id")
-);
-COMMENT ON TABLE public.statements_invoices IS 'invoices per statement (and reverse) N->N' ;
+COMMENT ON TABLE statements IS 'Bank statements';
 
-CREATE TABLE public.tags (
-    id int8 NOT NULL PRIMARY KEY,
-    "name" varchar(75) NOT NULL
+CREATE TABLE invoices
+(
+  id              BIGSERIAL      NOT NULL,
+  name            VARCHAR(75)    NOT NULL,
+  organisation_id BIGINT,
+  type_id         BIGINT,
+  amount          NUMERIC(12, 2) NOT NULL,
+  note            TEXT,
+  filename        VARCHAR(200),
+  content         TEXT,
+  paid            BIGINT,
+  raw             TEXT,
+  source_id       BIGINT         NOT NULL,
+  date            TIMESTAMP WITH TIME ZONE,
+  CONSTRAINT invoices_pkey
+  PRIMARY KEY (id),
+  CONSTRAINT invoices_organisation_id_fkey
+  FOREIGN KEY (organisation_id) REFERENCES organisations
 );
-COMMENT ON TABLE public.warranties IS 'Tags' ;
+
+COMMENT ON TABLE invoices IS 'Invoices and receipts';
+
+CREATE TABLE warranties
+(
+  id      BIGSERIAL   NOT NULL,
+  name    VARCHAR(75) NOT NULL,
+  receipt BIGINT,
+  note    TEXT,
+  CONSTRAINT warranties_pkey
+  PRIMARY KEY (id),
+  CONSTRAINT warranties_invoices_id_fk
+  FOREIGN KEY (receipt) REFERENCES invoices
+);
+
+COMMENT ON TABLE warranties IS 'Tags';
+
+CREATE TABLE statements_relations
+(
+  subject BIGINT        NOT NULL,
+  object  BIGINT        NOT NULL,
+  kind    STATEMENTKIND NOT NULL,
+  invoice BIGINT,
+  CONSTRAINT statements_relations_pkey
+  PRIMARY KEY (subject, object),
+  CONSTRAINT statements_relations_subject_fkey
+  FOREIGN KEY (subject) REFERENCES statements,
+  CONSTRAINT statements_relations_object_fkey
+  FOREIGN KEY (object) REFERENCES statements,
+  CONSTRAINT statements_relations_invoice_fkey
+  FOREIGN KEY (invoice) REFERENCES invoices
+);
+
+COMMENT ON TABLE statements_relations IS 'Relations between statements';
+
+CREATE TABLE statements_invoices
+(
+  statement_id BIGINT NOT NULL,
+  invoice_id   BIGINT NOT NULL,
+  note         TEXT,
+  CONSTRAINT statements_invoices_pkey
+  PRIMARY KEY (statement_id, invoice_id),
+  CONSTRAINT statements_invoices_statement_id_fkey
+  FOREIGN KEY (statement_id) REFERENCES statements,
+  CONSTRAINT statements_invoices_invoice_id_fkey
+  FOREIGN KEY (invoice_id) REFERENCES invoices
+);
+
+COMMENT ON TABLE statements_invoices IS 'invoices per statement (and reverse) N->N';
+
+CREATE TABLE tags
+(
+  id   BIGSERIAL   NOT NULL,
+  name VARCHAR(75) NOT NULL,
+  CONSTRAINT tags_pkey
+  PRIMARY KEY (id)
+);
+
+
